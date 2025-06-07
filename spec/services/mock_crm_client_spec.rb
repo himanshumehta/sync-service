@@ -16,7 +16,7 @@ RSpec.describe MockCrmClient do
     it 'simulates API latency' do
       # Stub rand to always return 1 (above failure rate of 0.05) to avoid random failures
       allow_any_instance_of(Object).to receive(:rand).and_return(1, 0.2) # 1 for failure check, 0.2 for sleep
-      
+
       start_time = Time.now
       client.create_contact({ email: 'test@example.com' })
       end_time = Time.now

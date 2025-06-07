@@ -1,7 +1,8 @@
 class MockCrmClient
   def initialize(provider_name)
     @provider = provider_name
-    @failure_rate = 0.05
+    # Read failure rate from environment variable, with fallback to default
+    @failure_rate = ENV["#{provider_name.upcase}_FAILURE_RATE"]&.to_f || 0.05
   end
 
   def create_contact(data)
@@ -19,13 +20,13 @@ class MockCrmClient
   private
 
     def simulate_api_call(operation, data)
-      # Simulate network latency
-      sleep(rand(0.1..0.3))
-
-      # Simulate random failures
+      # Simulate random failures first, before latency
       if rand < @failure_rate
         raise StandardError, "#{@provider} API error: #{[ 'Rate limit exceeded', 'Service unavailable', 'Timeout' ].sample}"
       end
+
+      # Simulate network latency only if no failure
+      sleep(rand(0.1..0.3))
 
       # Return mock response
       {
@@ -33,7 +34,7 @@ class MockCrmClient
         id: data[:id] || SecureRandom.hex(8),
         operation: operation,
         provider: @provider,
-        timestamp: Time.now.iso8601
+        timestamp: Time.now
       }
     end
 end
