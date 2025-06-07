@@ -4,6 +4,12 @@ class SyncWorker
   sidekiq_options retry: 3, queue: 'sync_high'
 
   def initialize
+    @rate_limiter = RateLimiter.new
+    @rate_limiter.set_limit('salesforce', 100)
+    @rate_limiter.set_limit('hubspot', 50)
+
+    @circuit_breaker = CircuitBreaker.new
+
     @crm_clients = {
       'salesforce' => MockCrmClient.new('salesforce'),
       'hubspot' => MockCrmClient.new('hubspot')
@@ -12,7 +18,22 @@ class SyncWorker
 
   def perform(contact_id, operation, crm_provider)
     contact = Contact.find(contact_id)
-    sync_to_crm(contact, operation, crm_provider)
+
+    # Check rate limit
+    unless @rate_limiter.allow?(crm_provider)
+      # Reschedule for later
+      self.class.perform_in(30.seconds, contact_id, operation, crm_provider)
+      return
+    end
+
+    # Execute with circuit breaker protection
+    @circuit_breaker.call(crm_provider) do
+      sync_to_crm(contact, operation, crm_provider)
+    end
+  rescue CircuitBreaker::CircuitBreakerOpenError => e
+    # Reschedule when circuit is open
+    self.class.perform_in(60.seconds, contact_id, operation, crm_provider)
+    Rails.logger.warn "Circuit breaker open for #{crm_provider}: #{e.message}"
   rescue => e
     Rails.logger.error "Sync failed for contact #{contact_id} to #{crm_provider}: #{e.message}"
     raise e # Let Sidekiq handle retries

@@ -1,5 +1,6 @@
 source "https://rubygems.org"
 
+# ToDo - Ensure right versions are attached to gems
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.0.2"
 # Use postgresql as the database for Active Record
@@ -42,6 +43,7 @@ group :test do
   gem 'rspec-rails'
   gem 'factory_bot_rails'
   gem 'shoulda-matchers'  # for better assertions
+  gem 'mock_redis'
 end
 
 # Gemfile

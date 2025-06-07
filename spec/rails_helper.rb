@@ -10,6 +10,17 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require 'rspec/rails'
 require 'sidekiq/testing'
 Sidekiq::Testing.fake!
+
+require 'mock_redis'
+class Redis
+  def self.current
+    @current ||= MockRedis.new
+  end
+
+  def self.current=(redis_instance)
+    @current = redis_instance
+  end
+end
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -71,10 +82,10 @@ RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
 
   # Clean Redis and Sidekiq before each test
-  # config.before(:each) do
-  #   Redis.current.flushdb if defined?(Redis)
-  #   Sidekiq::Worker.clear_all
-  # end
+  config.before(:each) do
+    Redis.current.flushdb if defined?(Redis)
+    Sidekiq::Worker.clear_all
+  end
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:

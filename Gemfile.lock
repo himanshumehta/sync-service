@@ -148,6 +148,8 @@ GEM
     marcel (1.0.4)
     mini_mime (1.1.5)
     minitest (5.25.5)
+    mock_redis (0.50.0)
+      redis (~> 5)
     msgpack (1.8.0)
     net-http (0.6.0)
       uri
@@ -366,6 +368,7 @@ DEPENDENCIES
   factory_bot_rails
   faraday
   kamal
+  mock_redis
   pg (~> 1.1)
   puma (>= 5.0)
   rails (~> 8.0.2)
