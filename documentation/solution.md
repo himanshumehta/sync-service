@@ -40,10 +40,8 @@ contact = {
 ```
 
 ## High-Level Design
+![System Context](https://github.com/himanshumehta/sync-service/blob/main/documentation/high-level.png)
 
-```
-![System Context](./high-level.png)
-```
 
 ## Assumptions
 
@@ -65,7 +63,7 @@ contact = {
 
 ## 🔧 LLD
 
-![System Context](./lld.png)
+![System Context](https://github.com/himanshumehta/sync-service/blob/main/documentation/lld.png)
 
 ### 1. **SyncWorker** - Main Processing Engine
 ```ruby
@@ -136,7 +134,6 @@ Exponential backoff with jitter to prevent thundering herd and max delay cap:
 
 ## Technical Specifications
 
-```bash
 **Current Performance**:
 - 400-700 req/sec per instance
 - Target: 1000+ req/sec
@@ -151,7 +148,6 @@ Exponential backoff with jitter to prevent thundering herd and max delay cap:
 - Failure threshold: 5 consecutive failures
 - Timeout: 30 seconds auto-recovery
 - Per-CRM independent state
-```
 
 ## Testing Strategy
 

@@ -1,8 +1,8 @@
 # Sync Service - Quick Setup & Load Testing
 
 ## Quick Start
-[Problem Documentation](documentation/problem.md)
-[Solution Documentation](documentation/problem.md)
+- [Problem Documentation](documentation/problem.md)
+- [Solution Documentation](documentation/solution.md)
 
 ### 1. Setup
 ```bash
