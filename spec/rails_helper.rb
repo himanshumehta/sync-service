@@ -71,10 +71,10 @@ RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
 
   # Clean Redis and Sidekiq before each test
-  config.before(:each) do
-    Redis.current.flushdb if defined?(Redis)
-    Sidekiq::Worker.clear_all
-  end
+  # config.before(:each) do
+  #   Redis.current.flushdb if defined?(Redis)
+  #   Sidekiq::Worker.clear_all
+  # end
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
