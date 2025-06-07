@@ -1,0 +1,63 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontColor #000000
+skinparam rectangleFontColor #000000
+skinparam rectangleBackgroundColor #FFFFFF
+skinparam rectangleBorderColor #000000
+skinparam arrowColor #000000
+skinparam arrowFontColor #000000
+skinparam noteBackgroundColor #F0F0F0
+skinparam noteBorderColor #000000
+
+HIDE_STEREOTYPE()
+
+title CRM Synchronization System - Low Level Design
+
+Container_Boundary(app, "CRM Sync Application") {
+    Component(contact_model, "Contact Model")
+    Component(sync_evaluator, "SyncEvaluator")
+    Component(sync_rules, "SyncRulesEngine")
+}
+
+Container_Boundary(worker, "Background Processing") {
+    Component(sync_worker, "SyncWorker")
+    Component(rate_limiter, "RateLimiter")
+    Component(circuit_breaker, "CircuitBreaker")
+    Component(crm_clients, "MockCrmClient")
+}
+
+ContainerDb(redis, "Redis")
+ContainerDb(sidekiq, "Sidekiq Queue")
+System_Ext(salesforce, "Salesforce API")
+System_Ext(hubspot, "HubSpot API")
+
+' Main flow
+Rel(contact_model, sync_evaluator, "triggers sync")
+Rel(sync_evaluator, sync_rules, "checks rules")
+Rel(sync_rules, sync_evaluator, "returns applicable CRMs")
+Rel(sync_evaluator, sidekiq, "queues job")
+
+' Worker processing
+Rel(sidekiq, sync_worker, "executes job")
+Rel(sync_worker, rate_limiter, "checks limit")
+Rel(sync_worker, circuit_breaker, "protects call")
+Rel(circuit_breaker, crm_clients, "executes if allowed")
+
+' External integrations
+Rel(crm_clients, salesforce, "API calls")
+Rel(crm_clients, hubspot, "API calls")
+
+' Redis interactions
+Rel(rate_limiter, redis, "stores counters")
+Rel(circuit_breaker, redis, "stores state")
+
+' Notes
+note right of sync_rules : Rules:\nSalesforce: CREATE always sync\nHubSpot: UPDATE always sync\nDELETE conditions vary
+
+note right of rate_limiter : Sliding window:\nSalesforce: 100/min\nHubSpot: 50/min
+
+note right of circuit_breaker : States: CLOSED, OPEN, HALF_OPEN\nFailure threshold: 5\nTimeout: 30s
+
+@enduml
